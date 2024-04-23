@@ -1,0 +1,14 @@
+[database]
+vm1 ansible_host=192.168.179.177
+
+[database:vars]
+postgresql_version_app=12
+postgresql_data=/var/tmp
+
+[web]
+vm1 ansible_host=192.168.179.177
+
+[app]
+vm2 ansible_host=192.168.179.178
+vm3 ansible_host=192.168.179.176
+

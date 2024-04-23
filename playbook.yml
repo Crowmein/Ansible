@@ -1,0 +1,109 @@
+---
+- name: install docker
+  hosts: app
+  become: yes
+  tasks:
+    - name: install required packages
+      package:
+        name: "{{ item }}"
+        state: present
+      loop: 
+        - apt-transport-https
+        - ca-certificates
+        - curl
+        - gnupg
+        - software-properties-common
+      when: ansible_os_family == "Debian"
+
+    - name: add docker gpg key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+      when: ansible_os_family == "Debian"
+
+    - name: add docker repository
+      apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu bionic stable
+        state: present
+      when: ansible_os_family == "Debian"
+
+    - name: install docker
+      apt:
+        name: "{{item}}"
+        state: latest
+        update_cache: yes
+      loop:
+        - docker-ce
+        - docker-ce-cli
+        - containerd.io
+      when: ansible_os_family == "Debian"
+
+    - name: add docker gpg key
+      rpm_key:
+        key: https://download.docker.com/linux/centos/gpg
+        state: present
+      when: ansible_os_family == "RedHat"
+
+    - name: install prerequisites
+      yum:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - yum-utils
+        - device-mapper-persistent-data
+        - lvm2
+      when: ansible_os_family == 'RedHat'
+
+
+    - name: add docker repository
+      yum_repository:
+        description: Docker CE Stable - $basearch
+        name: docker-ce
+        baseurl: https://download.docker.com/linux/centos/8/$basearch/stable
+        gpgcheck: yes
+        state: present
+      when: ansible_os_family == 'RedHat'
+
+
+    - name: install docker-ce
+      package:
+        name: docker-ce
+        state: present
+      when: ansible_os_family == "RedHat"
+
+    - name: start and enable docker service
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+- name: install postgresql
+  hosts: database
+  become: yes
+
+  vars:
+    postgresql_version: "{{ postgresql_version_app }}"
+    postgresql_install_dir: "{{ postgresql_data }}"
+
+  tasks:
+    - name: update apt packages
+      apt:
+        update_cache: yes
+
+    - name: install postgresql
+      package:
+        name: postgresql-{{ postgresql_version }}
+        state: present
+
+    - name: create postgresql installation directory
+      file:
+        path: "{{ postgresql_install_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: enable and start postgresql service
+      service:
+        name: postgresql
+        state: started
+        enabled: yes
+
