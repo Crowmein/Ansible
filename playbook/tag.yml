@@ -1,0 +1,16 @@
+---
+- hosts: all
+  tasks:
+    - name: Install postfix
+      package:
+        name: postfix
+        state: present
+      tags: 
+        - "init postfix"
+
+    - name: Remove postfix
+      package:
+        name: postfix
+        state: absent
+      tags: 
+        - "drop postfix"

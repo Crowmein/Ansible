@@ -1,0 +1,14 @@
+---
+- name: Create user user1 and add SSH key
+  hosts: vm1
+  become: yes
+
+  tasks:
+    - name: Create user user1
+      user:
+        name: user1
+        state: present
+
+    - name: Generate SSH key
+      shell: ssh-keygen -t rsa -b 4096 -C "user1@example.com" -f /home/user1/.ssh/id_rsa -q -N ""
+      become_user: user1
